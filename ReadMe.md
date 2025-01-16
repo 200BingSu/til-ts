@@ -282,3 +282,162 @@ let user4: {
 };
 user4.name = "배신자"; // 오류
 ```
+
+## 타입 별칭
+
+- 기존의 데이터 종류에 `새로운 이름으로 타입 만드는 문법`
+- 작성법은 `type 파스칼케이스= 데이터형`로 선언함
+
+```ts
+type Member = {
+  id: number;
+  name: string;
+  age: number;
+  email: string;
+  role: string;
+  isAdmin: boolean;
+  createAt: string;
+};
+
+const user_hong: Member = {
+  id: 1,
+  name: "홍길동",
+  age: 10,
+  email: "a@a.net",
+  role: "guest",
+  isAdmin: false,
+  createAt: "2024-12-24",
+};
+const user_park: Member = {
+  id: 2,
+  name: "둘리",
+  age: 10000,
+  email: "d@a.net",
+  role: "member",
+  isAdmin: false,
+  createAt: "0000-12-24",
+};
+```
+
+### 1. 타입 별칭 주의사항
+
+- 동일한 이름으로 type을 재정의할 수 없다.
+- 인덱스 시그니처를 잘 이해하여야 한다.
+
+```ts
+export type Member = {
+  id: number;
+  name: string;
+  age: number;
+  email: string;
+  role: string;
+  isAdmin: boolean;
+  createAt: string;
+  phone?: string;
+};
+// 아래처럼 타입은 재정의하지 못한다.
+export type Member = {}; //오류
+```
+
+- 인덱스 시그니처의 이해
+
+### type의 내용 정리
+
+- `/src/types 폴더`를 통상 생성합니다.
+- 폴더 내에 type만 정의한 ts 파일들이 다수 존재함.
+
+```ts
+export type Todo = {
+  id: number;
+  title: string;
+  content: string;
+  complete: boolean;
+  date: Date;
+};
+
+export type User = {
+  nickName: string;
+  role: string;
+  follow: string[];
+};
+
+export type Cart = {
+  goodId: string[];
+  total: number;
+  count: number;
+};
+```
+
+## Enum
+
+- `/src/constants 폴더` 생성
+  : colors.ts, value.ts, country.ts ..
+
+```ts
+// 회원의 등급을 설정하려고 합니다.
+// 특정 사항에 대해서 상수화 시켜서 코드를 관리하려는 의도
+
+// 3은 관리자
+// 2는 사장님
+// 1은 회원
+// 0은 방문객
+
+// "admin" 관리자
+// "owner" 사장님
+// "member" 회원
+// "guest" 방문객
+
+const Admin = 3;
+const Owner = 2;
+const Member = 1;
+const Guest = 0;
+
+const user_hong = {
+  nickName: "홍길동",
+  role: Admin,
+};
+const user_park = {
+  nickName: "둘리",
+  role: Owner,
+};
+```
+
+- 위의 상수 정의는 관리가 모호함. (주석이 없을 경우 의미 전달이 어렵기 때문에)
+- enum을 도입해서 상수를 묶어서 관리해보기
+- = 같은 용도를 모아서 상수의집합을 만들어서 활용해 보기.
+- 특정한 값이 없다면 0부터 숫자를 증가시켜 대입
+
+```ts
+enum MemberRole {
+  Guest,
+  Member,
+  Owner,
+  Admin,
+}
+
+const user_go = {
+  nickName: "또치",
+  role: MemberRole.Guest,
+};
+```
+
+## any
+
+- ts 안쓰려고 합니다. 즉, `어노테이션을 쓰지 않겠다`라고 선언함.
+- 가능하면 any를 안 쓰려고 노력합니다.
+- js 버전을 마이그레이션 하는 경우
+- 해결이 안되는 경우의 어노테이션을 회피 용도
+
+```ts
+let age: any = 15;
+age = 100;
+age = "안녕";
+```
+
+## unknown
+
+- any와 흡사하지만 차이가 있음.
+
+## never
+
+## void
