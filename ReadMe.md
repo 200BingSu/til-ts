@@ -437,6 +437,142 @@ age = "안녕";
 ## unknown
 
 - any와 흡사하지만 차이가 있음.
+- 타입을 `if 문`, `typeof`, `isArray` 등으로 좁혀가면서 검사를 개발자가 해주어야 한다.
+  : 타입 좁히기, 타입 가드
+- `타입 단언`(type assertion)
+  : `이 타입이 맞다`라고 알려주는 문법
+
+```ts
+let age: unknown = "hello";
+console.log((age as string).toUpperCase());
+```
+
+```ts
+type User = {
+  id: number;
+  name: string;
+};
+
+function processAny(person: any): string {
+  return person.name;
+}
+const result1 = processAny({ id: 1, name: "hong" });
+const result2 = processAny({ id: 2 });
+
+function processUnknown(person: unknown): string | null {
+  if (typeof person === "object" && person !== null && "name" in person) {
+    return (person as User).name;
+  }
+  return null;
+}
+const result3 = processUnknown({ id: 1, name: "hong" });
+const result4 = processUnknown({ id: 2 });
+```
+
+### any와 unknownd의 차이
+
+```ts
+// any와 unknown의 차이를 이해하자.
+let anything: any = "Hello";
+anything = 123;
+anything.toUpperCase(); // any로 타입을 정해놔서 123인데도 오류가 안 뜬다.
+anything.toFixed(2); // 숫자 적용
+
+let unknownItem: unknown = "Hello";
+
+unknownItem = 123;
+//  any 보다는 unknown을 사용하자.
+unknownItem.toFixed(2); // any와 달리 값을 사용해 처리하려하면 오류 발생
+// 단 타입을 검사하는 조건을 넣어서(타입 가드) 안전하게 사용하자.
+if (typeof unknownItem === "string") {
+  unknownItem.toUpperCase();
+}
+if (typeof unknownItem === "number") {
+  unknownItem.toFixed(2);
+}
+```
+
+```ts
+// 변수 어노테이션
+// 매개 변수 타입(학습 안함)
+// 함수 리턴 타입(학습 안함)
+function processAny(word: any) {
+  console.log(word.toUpperCase());
+}
+processAny("hello");
+
+function processUnknown(word: unknown) {
+  // unknown은 type guard를 활용
+  // 타입 좁히기
+  if (typeof word === "string") {
+    console.log(word.toUpperCase());
+  } else {
+    console.log("글자를 전달하세요.");
+  }
+}
+processUnknown("hello");
+processUnknown(123);
+```
+
+```ts
+// 변수 어노테이션
+// 매개 변수 타입(학습 안함)
+// 함수 리턴 타입(학습 안함)
+function processAny(person: any) {
+  console.log(person.nickName.toUpperCase());
+}
+processAny({ nickName: "홍", age: 10 });
+processAny({ age: 10 });
+
+function processUnknown(person: unknown) {
+  // unknown은 type guard를 활용
+  // 타입 좁히기
+  if (
+    typeof person === "object" &&
+    person !== null &&
+    "nickName" in person &&
+    typeof person.nickName === "string"
+  ) {
+    console.log(person.nickName.toUpperCase());
+  } else {
+    console.log("nickName 속성이 없거나 유효하지 않습니다.");
+  }
+  if (
+    typeof person === "object" &&
+    person !== null &&
+    "age" in person &&
+    typeof person.age === "number"
+  ) {
+    console.log(person.age.toFixed(2));
+  } else {
+    console.log("age 속성이 없거나 유효하지 않습니다.");
+  }
+}
+processUnknown("hello");
+processUnknown(123);
+```
+
+```ts
+function processAny(person: any) {
+  console.log(person[0].toUpperCase());
+}
+processAny(["hong", "doori"]);
+processAny([123, 456]);
+
+function processUnknown(person: unknown) {
+  if (
+    Array.isArray(person) &&
+    person.length > 0 &&
+    typeof person[0] === "string"
+  ) {
+    console.log(person[0].toUpperCase());
+  } else {
+    console.log("잘못된 인수 입력입니다.");
+  }
+}
+processUnknown(["hong", "doori"]);
+processUnknown([123, 456]);
+```
 
 ## never
 

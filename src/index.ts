@@ -1,9 +1,19 @@
-let age: any = 15;
-age = 100;
-age = "안녕";
+type User = {
+  id: number;
+  name: string;
+};
 
-let ageUnknown: unknown = 15;
-ageUnknown = 100;
-ageUnknown = "안녕";
+function processAny(person: any): string {
+  return person.name;
+}
+const result1 = processAny({ id: 1, name: "hong" });
+const result2 = processAny({ id: 2 });
 
-// any와 unknown의 차이를 이해하자.
+function processUnknown(person: unknown): string | null {
+  if (typeof person === "object" && person !== null && "name" in person) {
+    return (person as User).name;
+  }
+  return null;
+}
+const result3 = processUnknown({ id: 1, name: "hong" });
+const result4 = processUnknown({ id: 2 });
