@@ -1,711 +1,91 @@
-# 타입스크립트란
+# 타입 호환성
 
-- `변수, 매개변수, 함수 리턴값의 데이터 종류를 작성`해주는 것.
+- Super Type: 더 많은 값을 포함하는 타입
+- Sub Type: 특정 값이나 조건을 가진 타입
 
-## 어노테이션(Annotation)
+## 예
 
-- 주석, 부가정보
-- 코드에 대한 설명, 추가적 정보를 제공한다.
+- Animal은 수퍼 타입, Cat은 서브 타입
 
-### typescript 어노테이션
+## 1. any
+
+- `any`는 `타입스크립트 최상위 Super Type`.
+- 어떤 타입도 any의 `Sub Type`이 된다.
 
 ```ts
-const 변수명: 데이터 타입 = 값;
-function 함수명(매개변수: 데이터 타입): 리턴의 데이터 타입 {
-  return 값;
+let value: any;
+
+// string은 any의 서브타입이라서 할당 가능
+value = "안녕";
+// number는 any의 서브타입이라서 할당 가능
+value = 100;
+// boolean는 any의 서브타입이라서 할당 가능
+value = true;
+```
+
+## 2. unknown
+
+- `unknown`은 `모든 타입의 Super Type`.
+- 하지만 반드시 타입 체크를 직접 해야한다(`타입가드`): typeof 등등
+
+```ts
+let value: unknown;
+
+// string은 any의 서브타입이라서 할당 가능
+value = "안녕";
+// number는 any의 서브타입이라서 할당 가능
+value = 100;
+// boolean는 any의 서브타입이라서 할당 가능
+value = true;
+
+// 담겨진 unknown을 활용하려면 타입 체크 필요.
+if (typeof value === "string") {
+  value.toUpperCase();
 }
 ```
 
-### 메타데이터 어노테이션
-
-- 일반적인 자바스크립트와 달리 NOde.js 또는 Spring에서 자주 봅니다.
-- @기호를 어노테이션이라고 한다.
-- 추가적인 정보를 제공하고 기능도 부여한다.
-
-```java
-@어노테이션
-@Entity
-@Table(name = "테이블명")
-public void 함수명(){}
-```
-
-## ts 어노테이션을 이용한 기본 데이터(primitive) 종류 명시
-
-### 1. 변수 어노테이션
-
-- `const 변수명: 데이터종류= 값;`
+- `unknown`은 다른 타입의 `서브 타입이 아니다`.
 
 ```ts
-let num: number = 1;
-let num1: number = 1.5;
-let num2: number = 0x10;
-let num3: number = Infinity;
-let num4: number = -Infinity;
-let num5: number = NaN;
+// js 를 마이그레이션 하면서 any 조심하다 보니 unknonw 을 사용함.
+let value: unknown = "안녕";
 
-let str: string = "안녕하세요";
-
-let bool: boolean = true;
-
-let un: undefined = undefined;
-
-let nu: null = null;
-
-let hi: "안녕" = "안녕";
-// hi = "안녕하세요"; // 오류
-
-const age: 5 = 10; // 오류
+// 아래 구문처럼 unknown 타입을 서브 타입으로 타입 캐스팅을 하면 오류발생함.
+let word: string = value;
 ```
 
-### 2. 타입 추론을 확인하고 잘못된 추론이면 직접 관여한다.
+## 3. never
 
-- 일단 타입 추론을 적극적으로 반영한다.
-- 필요시 어노테이션을 변경한다.
+- `never`은 `Super Type`이 될 수 없다.
+- `never`은 모든 타입의 `Sub Type`이다.
 
 ```ts
-let num: number | string = 1;
-const go = "안녕";
-num = "hello";
+// never은 절대 Super Type이 될 수 없다(어떤 값도 할당할 수 없다)
+let value: never = "안녕";
 ```
 
-### 3. ts의 데이터 종류
+## 4. void
 
-- unknown
-- any
-- null
-- void
-- undefined
-- never
-- number
-- Number Enum
-- bigint
-- string
-- String Enum
-- symbol
-- unique symbol
-- object
-- array
-- tuple
-- function
-- constructor
-
-## 객체 중 배열과 Tuple
-
-### 1. 배열
-
-- 배열을 만드는 법 1
+- `void`는 `undefined의 Super Type`이다.
+- `void`는 `any`나 `unknown`의 서브 타입이 될 수 있습니다.
 
 ```ts
-const arr1 = [1, 2, 3];
-console.log(arr);
-```
+// never은 절대 Super Type이 될 수 없다(어떤 값도 할당할 수 없다)
+let value: void = "안녕";
+let go: undefined = undefined;
+value = go;
+value = undefined;
 
-- 배열을 만드는 법 2(어노테이션)
+// 값을 할당할 수 없음(any나 unknown이 아니기 때문에)
+value = 5;
+// void는 undefined의 서브 타입이 아님
+go = function () {};
 
-```ts
-const arr2: number[] = [1, 2, 3];
-```
-
-- 배열을 만드는 법 3
-
-```ts
-const arr3: Array<number> = [1, 2, 3];
-```
-
-```ts
-// 배열
-const arr = [1, 2, 3];
-console.log(arr);
-const arr2: number[] = [1, 2, 3];
-// `제네릭` 문법 활용시 <데이터 종류>
-const arr3: Array<number | string> = [1, 2, 3];
-arr3[0] = "반가워"; // 오류
-
-// 배열
-const arr4 = ["안녕", "반가워"];
-const arr5: string[] = ["안녕", "반가워"];
-// `제네릭` 문법 활용시
-const arr6: Array<string | number> = ["안녕", "반가워"];
-arr6[1] = 5000; // 오류
-
-// 배열
-const arr7 = [1000, "사과"];
-const arr8: (number | string)[] = [1000, "사과"];
-const arr9: Array<number | string | boolean> = [1000, "사과"];
-arr9[1] = false;
-```
-
-```ts
-// 객체 배열
-const todos = [
-  { id: 1, title: "안녕", complete: false },
-  { id: 2, title: "리액트", complete: false },
-  { id: 3, title: "타입스크립트", complete: false },
-];
-const todos2: {
-  id: number;
-  title: string;
-  complete: boolean;
-}[] = [];
-
-const todos3: Array<{
-  id: number;
-  title: string;
-  complete: boolean;
-}> = [
-  { id: 1, title: "안녕", complete: false },
-  { id: 2, title: "리액트", complete: false },
-  { id: 3, title: "타입스크립트", complete: false },
-];
-```
-
-### 2. Tuple
-
-- Tuple은 ts에만 있다.
-- Tuple은 배열의 어노테이션입니다.
-- Tuple은 배열의 길이와 데이터 종류를 고정해 버린다.
-- Tuple은 배열의 요소를 추가, 삭제 못한다.
-
-```ts
-// 배열
-const arr = [1, 2, 3];
-let arrT: [number, number, number | string] = [1, 2, 3];
-arrT = [1, 2, 3]; // 오류: 정해진 배열 길이 초과
-arrT = [1, 3, "안녕"]; // 오류: 데이터 타입
-const arr2: number[] = [1, 2, 3];
-const arrT2: [number, number, number] = [1, 2, 3];
-// `제네릭` 문법 활용시 <데이터 종류>
-const arr3: Array<number | string> = [1, 2, 3];
-const arrT3: [number | string, number, number] = [1, 2, 3];
-arrT3[0] = "반가워"; // 오류
-
-// 배열
-const arr4: [string, string] = ["안녕", "반가워"];
-
-const arr5: [string, string] = ["안녕", "반가워"];
-// `제네릭` 문법 활용시
-const arr6: [string, string | number] = ["안녕", "반가워"];
-arr6[1] = 5000; // 오류
-
-// 배열
-const arr7: [number, string] = [1000, "사과"];
-const arr8: (number | string)[] = [1000, "사과"];
-const arr9: Array<number | string | boolean> = [1000, "사과"];
-arr9[1] = false;
-
-// 객체 배열
-const todos: [
-  {
-    id: number;
-    title: string;
-    complete: boolean;
-  },
-  {
-    id: number;
-    title: string;
-    complete: boolean;
-  },
-  {
-    id: number;
-    title: string;
-    complete: boolean;
-  }
-] = [
-  { id: 1, title: "안녕", complete: false },
-  { id: 2, title: "리액트", complete: false },
-  { id: 3, title: "타입스크립트", complete: false },
-];
-const todos2: {
-  id: number;
-  title: string;
-  complete: boolean;
-}[] = [];
-
-const todos3: Array<{
-  id: number;
-  title: string;
-  complete: boolean;
-}> = [
-  { id: 1, title: "안녕", complete: false },
-  { id: 2, title: "리액트", complete: false },
-  { id: 3, title: "타입스크립트", complete: false },
-];
-```
-
-### 3. 배열과 튜플의 메소드는 동일함.
-
-- 배열임
-- pop, push는 정상 작동 되어버린다.
-- 그래서 튜플을 사용하는 경우가 적다.
-
-```ts
-let arrT: [number, number, number | string] = [1, 2, 3];
-arrT.push(7); //메서드로 인한 추가는 오류가 뜨지 않는다.
-```
-
-## 객체 리터럴
-
-```ts
-let user: {
-  name: string;
-  age: number;
-} = {
-  name: "hong",
-  age: 10,
-};
-let user2: {
-  name: string;
-  age: number;
-} = {
-  name: "kim",
-  age: 20,
-};
-
-//  옵션 제공
-let user3: {
-  name: string;
-  age: number;
-  job?: string; // 옵션 적용
-} = {
-  name: "hong",
-  age: 10,
-};
-user3.job = "학생"; // 오류
-
-// 문제 발생
-let user4: {
-  readonly name: string; // 변경 금지
-  age: number;
-} = {
-  name: "hong",
-  age: 10,
-};
-user4.name = "배신자"; // 오류
-```
-
-## 타입 별칭
-
-- 기존의 데이터 종류에 `새로운 이름으로 타입 만드는 문법`
-- 작성법은 `type 파스칼케이스= 데이터형`로 선언함
-
-```ts
-type Member = {
-  id: number;
-  name: string;
-  age: number;
-  email: string;
-  role: string;
-  isAdmin: boolean;
-  createAt: string;
-};
-
-const user_hong: Member = {
-  id: 1,
-  name: "홍길동",
-  age: 10,
-  email: "a@a.net",
-  role: "guest",
-  isAdmin: false,
-  createAt: "2024-12-24",
-};
-const user_park: Member = {
-  id: 2,
-  name: "둘리",
-  age: 10000,
-  email: "d@a.net",
-  role: "member",
-  isAdmin: false,
-  createAt: "0000-12-24",
-};
-```
-
-### 1. 타입 별칭 주의사항
-
-- 동일한 이름으로 type을 재정의할 수 없다.
-- 인덱스 시그니처를 잘 이해하여야 한다.
-
-```ts
-export type Member = {
-  id: number;
-  name: string;
-  age: number;
-  email: string;
-  role: string;
-  isAdmin: boolean;
-  createAt: string;
-  phone?: string;
-};
-// 아래처럼 타입은 재정의하지 못한다.
-export type Member = {}; //오류
-```
-
-- 인덱스 시그니처의 이해
-
-### type의 내용 정리
-
-- `/src/types 폴더`를 통상 생성합니다.
-- 폴더 내에 type만 정의한 ts 파일들이 다수 존재함.
-
-```ts
-export type Todo = {
-  id: number;
-  title: string;
-  content: string;
-  complete: boolean;
-  date: Date;
-};
-
-export type User = {
-  nickName: string;
-  role: string;
-  follow: string[];
-};
-
-export type Cart = {
-  goodId: string[];
-  total: number;
-  count: number;
-};
-```
-
-## Enum
-
-- `/src/constants 폴더` 생성
-  : colors.ts, value.ts, country.ts ..
-
-```ts
-// 회원의 등급을 설정하려고 합니다.
-// 특정 사항에 대해서 상수화 시켜서 코드를 관리하려는 의도
-
-// 3은 관리자
-// 2는 사장님
-// 1은 회원
-// 0은 방문객
-
-// "admin" 관리자
-// "owner" 사장님
-// "member" 회원
-// "guest" 방문객
-
-const Admin = 3;
-const Owner = 2;
-const Member = 1;
-const Guest = 0;
-
-const user_hong = {
-  nickName: "홍길동",
-  role: Admin,
-};
-const user_park = {
-  nickName: "둘리",
-  role: Owner,
-};
-```
-
-- 위의 상수 정의는 관리가 모호함. (주석이 없을 경우 의미 전달이 어렵기 때문에)
-- enum을 도입해서 상수를 묶어서 관리해보기
-- = 같은 용도를 모아서 상수의집합을 만들어서 활용해 보기.
-- 특정한 값이 없다면 0부터 숫자를 증가시켜 대입
-
-```ts
-enum MemberRole {
-  Guest,
-  Member,
-  Owner,
-  Admin,
+function say(_count: number) {
+  return "hello" + _count;
 }
+let result: void;
 
-const user_go = {
-  nickName: "또치",
-  role: MemberRole.Guest,
-};
-```
-
-## any
-
-- ts 안쓰려고 합니다. 즉, `어노테이션을 쓰지 않겠다`라고 선언함.
-- 가능하면 any를 안 쓰려고 노력합니다.
-- js 버전을 마이그레이션 하는 경우
-- 해결이 안되는 경우의 어노테이션을 회피 용도
-
-```ts
-let age: any = 15;
-age = 100;
-age = "안녕";
-```
-
-## unknown
-
-- any와 흡사하지만 차이가 있음.
-- 타입을 `if 문`, `typeof`, `isArray` 등으로 좁혀가면서 검사를 개발자가 해주어야 한다.
-  : 타입 좁히기, 타입 가드
-- `타입 단언`(type assertion)
-  : `이 타입이 맞다`라고 알려주는 문법
-
-```ts
-let age: unknown = "hello";
-console.log((age as string).toUpperCase());
-```
-
-```ts
-type User = {
-  id: number;
-  name: string;
-};
-
-function processAny(person: any): string {
-  return person.name;
-}
-const result1 = processAny({ id: 1, name: "hong" });
-const result2 = processAny({ id: 2 });
-
-function processUnknown(person: unknown): string | null {
-  if (typeof person === "object" && person !== null && "name" in person) {
-    return (person as User).name;
-  }
-  return null;
-}
-const result3 = processUnknown({ id: 1, name: "hong" });
-const result4 = processUnknown({ id: 2 });
-```
-
-### any와 unknownd의 차이
-
-```ts
-// any와 unknown의 차이를 이해하자.
-let anything: any = "Hello";
-anything = 123;
-anything.toUpperCase(); // any로 타입을 정해놔서 123인데도 오류가 안 뜬다.
-anything.toFixed(2); // 숫자 적용
-
-let unknownItem: unknown = "Hello";
-
-unknownItem = 123;
-//  any 보다는 unknown을 사용하자.
-unknownItem.toFixed(2); // any와 달리 값을 사용해 처리하려하면 오류 발생
-// 단 타입을 검사하는 조건을 넣어서(타입 가드) 안전하게 사용하자.
-if (typeof unknownItem === "string") {
-  unknownItem.toUpperCase();
-}
-if (typeof unknownItem === "number") {
-  unknownItem.toFixed(2);
-}
-```
-
-```ts
-// 변수 어노테이션
-// 매개 변수 타입(학습 안함)
-// 함수 리턴 타입(학습 안함)
-function processAny(word: any) {
-  console.log(word.toUpperCase());
-}
-processAny("hello");
-
-function processUnknown(word: unknown) {
-  // unknown은 type guard를 활용
-  // 타입 좁히기
-  if (typeof word === "string") {
-    console.log(word.toUpperCase());
-  } else {
-    console.log("글자를 전달하세요.");
-  }
-}
-processUnknown("hello");
-processUnknown(123);
-```
-
-```ts
-// 변수 어노테이션
-// 매개 변수 타입(학습 안함)
-// 함수 리턴 타입(학습 안함)
-function processAny(person: any) {
-  console.log(person.nickName.toUpperCase());
-}
-processAny({ nickName: "홍", age: 10 });
-processAny({ age: 10 });
-
-function processUnknown(person: unknown) {
-  // unknown은 type guard를 활용
-  // 타입 좁히기
-  if (
-    typeof person === "object" &&
-    person !== null &&
-    "nickName" in person &&
-    typeof person.nickName === "string"
-  ) {
-    console.log(person.nickName.toUpperCase());
-  } else {
-    console.log("nickName 속성이 없거나 유효하지 않습니다.");
-  }
-  if (
-    typeof person === "object" &&
-    person !== null &&
-    "age" in person &&
-    typeof person.age === "number"
-  ) {
-    console.log(person.age.toFixed(2));
-  } else {
-    console.log("age 속성이 없거나 유효하지 않습니다.");
-  }
-}
-processUnknown("hello");
-processUnknown(123);
-```
-
-```ts
-function processAny(person: any) {
-  console.log(person[0].toUpperCase());
-}
-processAny(["hong", "doori"]);
-processAny([123, 456]);
-
-function processUnknown(person: unknown) {
-  if (
-    Array.isArray(person) &&
-    person.length > 0 &&
-    typeof person[0] === "string"
-  ) {
-    console.log(person[0].toUpperCase());
-  } else {
-    console.log("잘못된 인수 입력입니다.");
-  }
-}
-processUnknown(["hong", "doori"]);
-processUnknown([123, 456]);
-```
-
-## never
-
-- "절개로 일어나면 안됩니다"(불가능한 상황)
-- "절대로 끝나지 않을거야"라는 표현(무한 루프)
-- 절대 발생하지 않는 상태를 표현할 때
-- 항상 에러를 던지는 함수 표현
-- 끝나지 않는 함수
-- 불가능한 생태 처리 등에 활용
-- 타입 안전성을 높이고, 예외 처리를 명확하게 하기 위한 용도.
-
-```ts
-function go(): never {
-  while (1) {}
-}
-function say(): never {
-  throw new Error("error");
-}
-```
-
-```ts
-type Animal = "cat" | "dog" | "fish";
-
-let a: Animal = "cat";
-a = "dog";
-a = "fish";
-a = "person";
-
-// Animal 타입으로 정의한 것 이외에는 절대 값이 존재하면 안된다.
-function say(who: Animal): string {
-  if (who === "cat") {
-    return "고양이";
-  } else if (who === "dog") {
-    return "강아지";
-  } else if (who === "fish") {
-    return "물고기";
-  } else {
-    // 이 곳까지 코드가 흘러오면 안됩니다.
-    const no: never = who;
-    throw new Error(`타입에 정의되지 않았습니다. ${no}`);
-  }
-}
-
-say("horse"); // 오류가 있어도 js는 만들어짐.
-```
-
-```ts
-function throwError(message: string): never {
-  throw new Error(message);
-}
-throwError("프로그램 중지");
-```
-
-- 무한루프 함수
-  : 절대 끝나지 않는 함수
-
-```ts
-function loop(): never {
-  while (true) {
-    console.log("무한루프");
-  }
-}
-
-loop();
-```
-
-- 언제 사용할까?
-  : switch, if~else 등 모든 경우를 처리한 이후
-  : 항상 에러를 던져야 하는 함수
-  : 무한 루프로 절대 종료되지 않는 함수
-  : 명확한 코드 흐름 안내
-- 간단 샘플
-
-## void
-
-- `아무것도 없어요`라는 의미
-- 주로 `함수의 리턴 타입`으로 사용합니다.
-
-```ts
-import { log } from "console";
-
-function func1(): string {
-  return "hello";
-}
-
-// 함수에서 리턴하는 값의 종류는 비어있음
-function func2(): void {
-  console.log("안녕");
-}
-
-//  값이 없다는 표현은 어떤게 있는가?
-// 함수 반환이 없으면 자동으로 기본 void 타입이 들어감.
-// 명시적으로 undefined를 리턴해야 한다면 작성해줘야함.
-function func3(): undefined {} //undefined
-function func4() {
-  return undefined;
-} // undefined
-function func5() {
-  return;
-} //void
-
-function func6(): null {}
-function func7(): null {
-  return null;
-}
-function func8(): null {
-  return;
-}
-
-let a: undefined = funcUf();
-```
-
-- void를 사용하는 곳
-  - 아무것도 반환하지 않을 때
-  - 반환 값이 필요없는 콜백 함수
-
-```ts
-// 비동기 함수
-async function fetchGetTodo(): Promise<void> {
-  const res = await fetch(`주소`);
-}
-
-async function fetchPostTodo(): Promise<boolean> {
-  const res = await fetch(`주소`);
-  return true;
-}
-type Todo = {
-  id: number;
-  title: string;
-};
-
-async function fetchPostTodo(): Promise<Todo> {
-  const res = await fetch(`주소`);
-  return { id: 1, title: "안녕" };
-}
+// string은 void의 서브타입이 아니다.
+result = say(100);
 ```
