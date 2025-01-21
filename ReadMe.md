@@ -576,4 +576,136 @@ processUnknown([123, 456]);
 
 ## never
 
+- "절개로 일어나면 안됩니다"(불가능한 상황)
+- "절대로 끝나지 않을거야"라는 표현(무한 루프)
+- 절대 발생하지 않는 상태를 표현할 때
+- 항상 에러를 던지는 함수 표현
+- 끝나지 않는 함수
+- 불가능한 생태 처리 등에 활용
+- 타입 안전성을 높이고, 예외 처리를 명확하게 하기 위한 용도.
+
+```ts
+function go(): never {
+  while (1) {}
+}
+function say(): never {
+  throw new Error("error");
+}
+```
+
+```ts
+type Animal = "cat" | "dog" | "fish";
+
+let a: Animal = "cat";
+a = "dog";
+a = "fish";
+a = "person";
+
+// Animal 타입으로 정의한 것 이외에는 절대 값이 존재하면 안된다.
+function say(who: Animal): string {
+  if (who === "cat") {
+    return "고양이";
+  } else if (who === "dog") {
+    return "강아지";
+  } else if (who === "fish") {
+    return "물고기";
+  } else {
+    // 이 곳까지 코드가 흘러오면 안됩니다.
+    const no: never = who;
+    throw new Error(`타입에 정의되지 않았습니다. ${no}`);
+  }
+}
+
+say("horse"); // 오류가 있어도 js는 만들어짐.
+```
+
+```ts
+function throwError(message: string): never {
+  throw new Error(message);
+}
+throwError("프로그램 중지");
+```
+
+- 무한루프 함수
+  : 절대 끝나지 않는 함수
+
+```ts
+function loop(): never {
+  while (true) {
+    console.log("무한루프");
+  }
+}
+
+loop();
+```
+
+- 언제 사용할까?
+  : switch, if~else 등 모든 경우를 처리한 이후
+  : 항상 에러를 던져야 하는 함수
+  : 무한 루프로 절대 종료되지 않는 함수
+  : 명확한 코드 흐름 안내
+- 간단 샘플
+
 ## void
+
+- `아무것도 없어요`라는 의미
+- 주로 `함수의 리턴 타입`으로 사용합니다.
+
+```ts
+import { log } from "console";
+
+function func1(): string {
+  return "hello";
+}
+
+// 함수에서 리턴하는 값의 종류는 비어있음
+function func2(): void {
+  console.log("안녕");
+}
+
+//  값이 없다는 표현은 어떤게 있는가?
+// 함수 반환이 없으면 자동으로 기본 void 타입이 들어감.
+// 명시적으로 undefined를 리턴해야 한다면 작성해줘야함.
+function func3(): undefined {} //undefined
+function func4() {
+  return undefined;
+} // undefined
+function func5() {
+  return;
+} //void
+
+function func6(): null {}
+function func7(): null {
+  return null;
+}
+function func8(): null {
+  return;
+}
+
+let a: undefined = funcUf();
+```
+
+- void를 사용하는 곳
+  - 아무것도 반환하지 않을 때
+  - 반환 값이 필요없는 콜백 함수
+
+```ts
+// 비동기 함수
+async function fetchGetTodo(): Promise<void> {
+  const res = await fetch(`주소`);
+}
+
+async function fetchPostTodo(): Promise<boolean> {
+  const res = await fetch(`주소`);
+  return true;
+}
+type Todo = {
+  id: number;
+  title: string;
+};
+
+async function fetchPostTodo(): Promise<Todo> {
+  const res = await fetch(`주소`);
+  return { id: 1, title: "안녕" };
+}
+```
