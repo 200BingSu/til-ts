@@ -1,12 +1,9 @@
-let age = 15;
-age = 100;
-age = "안녕";
-let ageUnknown = 15;
-ageUnknown = 100;
-ageUnknown = "안녕";
-// any와 unknown의 차이를 이해하자.
-let anything = "Hello";
-anything = 123;
-anything.toUpperCase(); // any로 타입을 정해놔서 123인데도 오류가 안 뜬다.
-anything.toFixed(2); // 숫자 적용
+const cat1 = { name: "hong", age: 3, color: "yellow" };
+const ani3 = cat1;
+console.log(ani3);
+const myCat = {
+    name: "고사리",
+    age: 5,
+    color: "brown",
+};
 export {};
