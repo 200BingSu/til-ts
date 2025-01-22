@@ -57,6 +57,7 @@ let word: string = value;
 ## 3. never
 
 - `never`은 `Super Type`이 될 수 없다.
+- `never`은 존재할 수 없는 값이다.
 - `never`은 모든 타입의 `Sub Type`이다.
 
 ```ts
@@ -88,4 +89,26 @@ let result: void;
 
 // string은 void의 서브타입이 아니다.
 result = say(100);
+```
+
+## 5. string, number, boolean
+
+- 위의 타입은 각각의 리터럴 타입의 `Super Type`이다.
+- 위의 타입은 각각 `any`와 `unknown`의 `sub type`이다.
+
+```ts
+// 리터럴은 실제 값을 말한다.
+// 아래는 "hello"는 "hello" 라는 리터럴이다.
+let str: string = "hello";
+// const 상수로 만들면 값은 "hello"로 고정이 됩니다.
+const constStr: "hello" = "hello";
+// 그러나 어찌되었든 "hello"는 string이다.
+
+// "hello" 리터럴은 문자열에 포함된다((업캐스팅된다.))
+str = constStr;
+
+// 리터럴로 표현하면
+let num: 100 = 100;
+// 100 리터럴은 숫자형에 포함된다. (업캐스팅된다)
+let num2: number = num;
 ```
