@@ -1,31 +1,9 @@
-type Cat = {
-  kind: "CAT";
-  sound: string;
-  color: string;
-};
-type Dog = {
-  kind: "DOG";
-  sound: string;
-  food: string;
-};
-type Bird = {
-  kind: "BIRD";
-  sound: string;
-  fly: boolean;
-};
-type Animal = Cat | Dog | Bird;
+type A = (value: number) => 10;
+type B = (value: number) => number;
 
-// 동물의 소리를 출력하는 기능
-function song(what: Animal) {
-  switch (what.kind) {
-    case "CAT":
-      console.log("고양이");
-      break;
-    case "DOG":
-      console.log("개");
-      break;
-    case "BIRD":
-      console.log("새");
-      break;
-  }
-}
+let a: A = (value) => 10;
+let b: B = (value) => value;
+
+a = b; // 오류
+b = a; // OK
+// 결론: 티런 타입의 호환은 Super타입과 Sub 타입의 호환이 유지된다.
