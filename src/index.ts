@@ -1,23 +1,31 @@
-type Person = {
-  name: string;
-  age: number;
+type Cat = {
+  kind: "CAT";
+  sound: string;
+  color: string;
 };
+type Dog = {
+  kind: "DOG";
+  sound: string;
+  food: string;
+};
+type Bird = {
+  kind: "BIRD";
+  sound: string;
+  fly: boolean;
+};
+type Animal = Cat | Dog | Bird;
 
-function func(value: string | number | Date | null | Person) {
-  if (typeof value === "string") {
-    value.toUpperCase();
-  } else if (typeof value === "number") {
-    value.toFixed(2);
-  } else if (value instanceof Date) {
-    //Date라는 것을 보장 받음
-    value.getTime();
-  }
-  //else if (value instanceof Person) {}
-  //else if ("age" in value) {} //오류
-  // else if (value && "age" in value) {
-  //   console.log((value as Person).age);
-  // }  // 성공
-  else if (value as Person) {
-    console.log((value as Person).age);
+// 동물의 소리를 출력하는 기능
+function song(what: Animal) {
+  switch (what.kind) {
+    case "CAT":
+      console.log("고양이");
+      break;
+    case "DOG":
+      console.log("개");
+      break;
+    case "BIRD":
+      console.log("새");
+      break;
   }
 }

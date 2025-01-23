@@ -1,88 +1,135 @@
-# 타입 좁히기(Type Narrowing)
+# 서로소 유니온(Discriminated Union)
 
-- 값의 타입을 조금씩 구체적으로 좁혀서 사용하는 것.
-- 예를 들면, `string | number`가 있는데, `string`과 `number`에 따라 기능을 별도로 구현.
-- 조건문과 타입 체크를 사용해서 좁혀나갑니다.
-- if 조건문을 이용해서 타입을 좁히는 과정을 흔히 `타입 가드`라고 합니다.
+- `Tag 유니온`이라고도 함.
+- 여러가지 Type 중에 특정한 타입으로 타입 좁히기.(특정 타입으로 판단하도록)
+- `서로소` 관계란 `string|number` 처럼 어떤 교집합도 없는 것.
 
-## 1. `typeof`로 타입 좁히기
+## 샘플1
 
-- 값의 타입을 확인하고 조건에 따라서 실행.
-
-```ts
-function func(value: string | number | Date) {
-  if (typeof value === "string") {
-    value.toUpperCase();
-  } else if (typeof value === "number") {
-    value.toFixed(2);
-  } else if (typeof value === "object") {
-    // 위험: 배열을 넣을 경우 에러 발생
-    value.getTime();
-  }
-}
-const obj = {};
-func(obj); // 에러 발생
-```
-
-## 2. `instanceof`로 타입 좁히기
+- `in` 문법으로 좁히기
 
 ```ts
-function func(value: string | number | Date) {
-  if (typeof value === "string") {
-    value.toUpperCase();
-  } else if (typeof value === "number") {
-    value.toFixed(2);
-  } else if (value instanceof Date) {
-    //Date라는 것을 보장 받음
-    value.getTime();
-  }
-}
-```
-
-## 3. `in`으로 타입 좁히기
-
-```ts
-type Person = {
+// 회원서비스 별 타입 정의
+type Admin = {
+  tag: "ADMIN";
   name: string;
-  age: number;
+  memberCount: number; // 회원수
 };
+type Member = {
+  tag: "MEMBER";
+  name: string;
+  point: number; // 점수
+};
+type Guest = {
+  tag: "GUEST";
+  name: string;
+  visitCount: number; // 방문수
+};
+// 유니온을 이용해서 회원 구별 타입 생성
+type User = Admin | Member | Guest;
+// 로그인 후 회원에 따라서 안내 메시지를 보여준다.
 
-function func(value: string | number | Date | null | Person) {
-  if (typeof value === "string") {
-    value.toUpperCase();
-  } else if (typeof value === "number") {
-    value.toFixed(2);
-  } else if (value instanceof Date) {
-    //Date라는 것을 보장 받음
-    value.getTime();
-  } else if ("age" in (value as Person)) {
-    console.log((value as Person).age);
+function login(user: User) {
+  // user 의 종류에 따라서 메시지 출력
+  // 타입을 좁혀서 상세하게 구분해서 처리
+  // user 는 객체입니다.
+  if ("memberCount" in user) {
+    console.log(`관리자님 ${user.memberCount} 명이 회원입니다`);
+  } else if ("point" in user) {
+    console.log(`회원님 ${user.point} 점수 입니다.`);
+  } else {
+    console.log(`방문객 ${user.visitCount} 방문하셨습니다.`);
+  }
+```
+
+- 별도의 흔적 구분 요소(`타입: 문자열,`)로 처리
+
+```ts
+// 회원 서비스 별 타입 정의
+type Admin = {
+  tag: "ADMIN";
+  name: string;
+  memberCount: number; // 회원 수
+};
+type Member = {
+  tag: "MEMBER";
+  name: string;
+  point: number; // 점수
+};
+type Guest = {
+  tag: "GUEST";
+  name: string;
+  visitCount: number; // 방문 횟수
+};
+// 유니온을 이용해서 회원 구별 타입 생성
+type User = Admin | Member | Guest;
+
+// 로그인 후 회원에 따라서 안내 메세지를 보여준다.
+function Login(user: User) {
+  // user의 종류에 따라서 메세지 출력
+  // 타입을 좁혀서 상세하게 구분해서 처리
+  // user은 객체.
+  if (user.tag === "ADMIN") {
+    console.log(`관리자님 ${user.memberCount}명이 회원입니다.`);
+  } else if (user.tag === "MEMBER") {
+    console.log(`회원님의 포인트 점수는 ${user.point}점 입니다.`);
+  } else {
+    console.log(`방문자님의 방문 횟수는 ${user.visitCount}회 입니다.`);
   }
 }
 ```
 
-```ts
-type Person = {
-  name: string;
-  age: number;
-};
+- 가독성을 위해서 `스위치 문법` 사용
 
-function func(value: string | number | Date | null | Person) {
-  if (typeof value === "string") {
-    value.toUpperCase();
-  } else if (typeof value === "number") {
-    value.toFixed(2);
-  } else if (value instanceof Date) {
-    //Date라는 것을 보장 받음
-    value.getTime();
+```ts
+function Login(user: User) {
+  // 가독성을 위해서
+  switch (user.tag) {
+    case "ADMIN":
+      console.log(`관리자님 ${user.memberCount}명이 회원입니다.`);
+      break;
+    case "MEMBER":
+      console.log(`회원님의 포인트 점수는 ${user.point}점 입니다.`);
+      break;
+    case "GUEST":
+      console.log(`방문자님의 방문 횟수는 ${user.visitCount}회 입니다.`);
+      break;
   }
-  //else if (value instanceof Person) {}
-  //else if ("age" in value) {} //오류
-  // else if (value && "age" in value) {
-  //   console.log((value as Person).age);
-  // }  // 성공
-  else if (value as Person) {
-    console.log((value as Person).age);
+}
+```
+
+## 샘플2
+
+```ts
+type Cat = {
+  kind: "CAT";
+  sound: string;
+  color: string;
+};
+type Dog = {
+  kind: "DOG";
+  sound: string;
+  food: string;
+};
+type Bird = {
+  kind: "BIRD";
+  sound: string;
+  fly: boolean;
+};
+type Animal = Cat | Dog | Bird;
+
+// 동물의 소리를 출력하는 기능
+function song(what: Animal) {
+  switch (what.kind) {
+    case "CAT":
+      console.log("고양이");
+      break;
+    case "DOG":
+      console.log("개");
+      break;
+    case "BIRD":
+      console.log("새");
+      break;
   }
 }
 ```
