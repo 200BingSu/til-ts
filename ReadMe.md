@@ -212,6 +212,6 @@ const who: Male = {
 ## 5. 정리
 
 - `객체 데이터 모양`은 일단 인터페이스로 정의한다고 생각.
-- 추후 Promise에 데이터 모양은 Type이 아니라 `interface`fmf ghkfdydgkwk.
+- 추후 Promise에 데이터 모양은 Type이 아니라 `interface`를 활용하자.
   - axios, fetch, XMLHTtpRequest 등은 모두 Promise를 리턴한다.
   - `function acync 함수():Promise<인터페이스>`
