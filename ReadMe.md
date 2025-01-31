@@ -346,3 +346,102 @@ b = a; // OK
 ```
 
 ## 함수 오버로딩
+
+- 우리는 ts 작업에서 외부 라이브러리 (모듈) 활용 많이함.
+- 많은 라이브러리들이 함수사용하는 여러가지 형태를 제공합니다.
+- 직접 `함수 오버로딩` 을 제작하기 보다는 라이브러리 이해를 위해서 알아야 함.
+- 동일한 이름의 함수이고, 구분은 매개변수 갯수 차이, 매개변수 타입 차이를 활용.
+- 타입스크립트, java, c#, c++에 있는 문법(js 기준)
+
+```js
+function go() {}
+function go(a: number) {}
+function go(a: number, b: number) {}
+go();
+go(1);
+go(1, 2);
+```
+
+### 함수 오버로딩 작성법
+
+- 오버로딩 시그니처의 정의(함수 몸체 없음)
+- 함수 몸체를 별도로 정의
+  - 함수 이름이 동일해야함.
+  - 매개변수는 옵션(`?`)을 적용한 가변 매개변수
+  - 함수 몸체에 타입 좁히기로 마무리한다.
+
+```ts
+// 오버로딩 시그니처를 먼저 생성
+// 함수 몸체가 없음
+function go(a: number): void;
+function go(a: number, b: number): void;
+function go(a: number, b: number, c: number): void;
+// 함수 몸체를 작성하는 문법(구현 시그니처)
+// 오버로딩을 구현하는 문법은 매개변수에 옵션을 적용한다.
+// 함수 몸체에서 타입 좁히기를 작성한다.
+function go(a: number, b?: number, c?: number): void {
+  if (typeof b === "number" && typeof c === "number") {
+    console.log(a + b + c);
+  } else if (typeof b === "number") {
+    console.log(a + b);
+  } else {
+    console.log(a);
+  }
+}
+
+go(); // 오류 발생(매개변수가 없음)
+go(1); // 매개변수 1개 처리
+go(1, 2); // 매개변수 2개 처리
+go(1, 2, 3); // 매개변수 3개 처리
+go(1, 2, 3, 4); // 오류 발생(매개변수 4개짜리 없음)
+```
+
+## Custom Type Guard(사용자 정의 타입가드-타입을 명확히 함)
+
+- 사용자 정의 타입가드(타입을 명확히 함)
+- 외부 개발자 또는 라이브러리에서 만들어
+- 정확한 타입을 지정하는 경우 활용
+
+```ts
+// 안타깝게도 팀장님이 작성한 타입이라서
+// 우리가 고쳐서 활용하기는 어렵다.
+// 원본을 수정할 수 없는데, 우리는 타입을 구분해야 하는 경우다.
+type Dog = {
+  name: string; // 이름
+  isBark: boolean; // 짖는다.
+};
+type Cat = {
+  name: string; // 이름
+  isScratch: boolean; // 할퀸다.
+};
+
+// 정의되어진 타입을 활용한다. (타입을 사용하려는 개발자)
+type Animal = Dog | Cat;
+
+function go(ani: Animal) {
+  // 타입가드
+  if ("isBark" in ani) {
+    console.log(ani + "는 강아지구나");
+  } else if ("isScratch" in ani) {
+    console.log(ani + "는 고양이구나");
+  }
+}
+
+// 우리가 타입가드를 적용한 함수생성
+// 참인지 아닌지에 따라서 타입 리턴하여 타입 좁히기 적용
+function isDog(ani: Animal): ani is Dog {
+  return (ani as Dog).isBark !== undefined;
+}
+function isCat(ani: Animal): ani is Cat {
+  return (ani as Cat).isScratch !== undefined;
+}
+// 타입 추론이 정확하게 되도록 잡아준다.
+function goType(ani: Animal) {
+  // 타입가드
+  if (isDog(ani)) {
+    console.log(ani + "는 강아지입니다.");
+  } else if (isCat(ani)) {
+    console.log(ani + "는 고양이입니다.");
+  }
+}
+```
