@@ -1,16 +1,32 @@
-// interface는 최종적으로 하나로 합쳐진다.
-interface Person {}
-
-interface Person {
+// 구현 약속하기 (implements)
+interface CarInterface {
   name: string;
-  age: number;
+  brand: string;
+  price: number;
+  stop(): void;
+  move(): void;
+}
+interface ElectricInterface {
+  batterry: number;
+  isBatterry: boolean;
 }
 
-interface Male extends Person {
-  name: "MALE";
+class ElectricCar implements CarInterface, ElectricInterface {
+  constructor(
+    public name: string,
+    public brand: string,
+    public price: number,
+    public batterry: number,
+    public isBatterry: boolean
+  ) {}
+  stop() {
+    console.log("멈춰");
+  }
+  move() {
+    console.log("움직여");
+  }
 }
 
-const who: Male = {
-  name: "홍", // 오류 발생 "MALE"을 정의해뒀기 때문에
-  age: 10,
-};
+let 자동차 = new ElectricCar("캐스퍼", "현대", 1000, 100, true);
+자동차.stop();
+자동차.move();
