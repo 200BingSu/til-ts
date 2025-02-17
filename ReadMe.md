@@ -674,3 +674,747 @@ const divide3: ITwo = (a, b) => a / b;
 ```
 
 # 함수 오버로딩
+
+```ts
+/**
+ * # 함수 오버로딩
+ * 하나의 함수로 여러개의 처리를 진행하도록 구성
+ *
+ */
+// 매개 변수 1개, 매개변수 3개만 받아서 출력하는 함수
+// 그런데 함수의 이름은 같다.
+function showString1(a: string): void {
+  console.log(a);
+}
+
+function showString2(a: string, b: string, c: string): void {
+  console.log(a, b, c);
+}
+
+// 옵션을 통해 3개의 매개변수로 처리하고 싶음
+function showString3(a: string, b?: string, c?: string): void {
+  if (b && c) {
+    console.log(a, b, c);
+  } else {
+    console.log(a);
+  }
+}
+
+showString3("A");
+showString3("A", "B", "C");
+showString3("A", "B"); //오류는 아닌데 원치않는 기능 오류
+
+//함수 오버로딩
+// 매개변수1개, 매개변수 3개만 받아서 출력하는 함수
+// 함수의 이름이 같다.
+function showString4(a: string): void;
+function showString4(a: string, b: string, c: string): void;
+
+// 오버로딩 구현체
+function showString4(a: string, b?: string, c?: string): void {
+  if (b && c) {
+    console.log(a, b, c);
+  } else {
+    console.log(a);
+  }
+}
+showString4("A");
+showString4("A", "B", "C");
+// showString4("A", "B"); // 오류 발생(오류는 오버로딩 정의에 없기 떄문에)
+```
+
+# Type Predicate(타입 프리디케이트)
+
+- 어떤 종류의 데이터 타입인지를 확인해서 `데이터 타입 또는 boolean`을 리턴해줌.
+
+```ts
+/**
+ * Type Predicate(타입 프리디케이트)
+ */
+
+// 숫자 데이터타입인지 아닌지 알아내는 함수
+// true 또는 false 만 알수 있다.
+// 리턴값의 타입은 알수 없다.
+// 리턴값의 타입을 알아낼 수는 없을까?
+function isNumber(변수명: any) {
+  return typeof 변수명 === "number";
+}
+// let a: boolean
+// 나는 a 가 number 라고 타입이 추론되기를 원했다.
+// 그런데 a가 boolean 이다.
+// 타입을 알아낼 수 없네.
+let a = isNumber(123);
+
+// let b: boolean
+let b = isNumber("안녕");
+
+// 나는 true / false 가 아니고
+// 리턴되는 값의 타입을 알고 싶다.
+// 그때 사용하는 게 타입 프리디케이트이다.
+function isNumber2(변수명: any): 변수명 is number {
+  return typeof 변수명 === "number";
+}
+// let a2: number
+let a2 = 123;
+if (isNumber2(a2)) {
+  // let a2: number
+  a2;
+}
+
+// let b2: string
+let b2 = "안녕";
+
+if (isNumber2(b2)) {
+  // let b2: never;
+  // 예는 원래 string 이었는데 never 로 변경되었다.
+  // never 는 존재할 수 없는 타입이다.
+  b2;
+}
+
+/**
+ * interface 에서 타입알아내기
+ */
+interface Dog {
+  name: string;
+  age: number;
+}
+interface Cat {
+  name: string;
+  breed: string;
+}
+type DogOrCat = Dog | Cat;
+
+// 나는 Dog 타입인지, Cat 타입인지 정확히 타입을 좁히고 싶다.
+// Dog 타입이라면 Dog 에 대한 코딩 처리
+// Cat 이라면 Cat 에 대한 코딩 처리
+// 여기서는 true/false 가 아닌 타입을 리턴 받고 싶다.
+
+// boolean 리턴
+function isDog(변수명: DogOrCat): boolean {
+  return (변수명 as Dog).age !== undefined;
+}
+
+// type 리턴
+function isDogTypeReturn(변수명: DogOrCat): 변수명 is Dog {
+  return (변수명 as Dog).age !== undefined;
+}
+
+const doge: DogOrCat = { name: "강아지", age: 5 };
+// true / false 체크 및 boolean
+// 분명히 const doge: DogOrCat 라고 타입을 정의했다.
+if (isDog(doge) === true) {
+  // 타입 좁히기 성공
+  // const doge: Dog
+  doge;
+  doge.age;
+} else {
+  // const doge: Dog 라고 나오면 이상한거 아닌가요?
+  doge;
+  doge.age;
+}
+// 타입 체크 및 타입 리턴
+// 분명히 const doge: DogOrCat 라고 타입을 정의했다.
+// 아래 구문에서는
+// const doge: Dog 로 변환이 된다.
+if (isDogTypeReturn(doge)) {
+  // 정확히 Dog 타입이 확인 되었으므로 dog 에 대한 코딩 처리 가능..
+  doge;
+  doge.age;
+} else {
+  // const doge: never 로 추론됨
+  doge;
+  // doge.age; // 오류 정확히 타입 체크 했으므로 오류가 맞다.
+}
+```
+
+# type과 interface의 차이 2
+
+- 1번. type과 interface는 만드는 법이 다르다.
+
+```ts
+type A = { age: 1 };
+interface A {
+  age: 1;
+}
+```
+
+- 2번. type에는 데이터 타입 할당, interface는 할당 못함
+
+```ts
+type A = string;
+interface string; //오류(문법 없음)
+```
+
+- 3번. type과 interface의 함수 시그니처(구조) 정의 차이
+
+```ts
+type A = (x: number) => number;
+interface A {
+  // 키명: 키값
+  (x: number): number;
+}
+```
+
+# type과 interface의 차이 4
+
+```ts
+/**
+ * type 과 inteface 차이 4
+ */
+
+// type 에서만 가능해요.
+type String = string;
+type unionT = string | number;
+type tupleT = [string, number];
+
+// interface 에서만 가능해요.
+// interface 합치기
+
+// 같은 이름으로 정의가 가능하다.
+interface Box {
+  width: number;
+}
+interface Box {
+  // 같은 이름은 사용가능하다.
+  // 하지만 타입 변경은 불가능하다.
+  // width: string; // 타입오류
+
+  height: string;
+}
+// 합성된 예
+const box: Box = { width: 10, height: "길다" };
+
+// 타입은 같은 이름 안되요.
+// type Go = {}
+// type Go = {}
+
+// 참고
+class Review {
+  // 속성: Property (인스턴스 에 소속)
+  getX = (x: string) => {
+    return x;
+  };
+
+  // 메소드 : Method (프로토타입 에 소속)
+  getXY(x: string) {
+    return x;
+  }
+}
+
+// 프로퍼티 방식으로 Merging 하기
+interface GetXnY {
+  // 프로퍼티 형식
+  getX: (x: number) => number;
+  getY: (y: number) => number;
+}
+interface GetXnY {
+  getX: (x: number) => number;
+  // getY: (y: number) => number;
+  // getY: (y: string) => number; // 오류 발생 (매개변수 타입 달라서)
+  // getY: (y: number) => string; // 오류 발생 (리턴 타입 달라서)
+}
+
+// 메소드 방식으로 Merging 하기
+interface GetXnYMethod {
+  // 프로퍼티 형식
+  // getXP: (x: number) => number;
+  // getYP: (y: number) => number;
+
+  // 메소드 형식
+  getX(x: number): number;
+  getY(y: number): number;
+}
+
+interface GetXnYMethod {
+  // 메소드 형식
+  // getX(x: number): number;
+  // getY(y: number): number;
+  // getY(y: string): number; // 매개변수 타입 바꿔도 됩니다.
+  getY(y: string): string; // 리턴 타입 바꿔도 됩니다.
+  // getY(y: string, z: number): string; // 매개변수 개수를 바꾸어도 된다.
+}
+
+const testM: GetXnYMethod = {
+  // (parameter) x: number
+  getX(x) {
+    return x;
+  },
+
+  // (parameter) y: string | number
+  // 아래 오류 해결 필요
+  getY(y) {
+    if (typeof y === "string") {
+      return y; // string을 반환
+    } else {
+      return y; // number를 반환
+    }
+  },
+};
+
+// 아래 코드로 진행 요청 1
+
+interface GetXnYMethod {
+  getX(x: number): number;
+  getY(y: number): number;
+  getY(y: string): string;
+}
+
+const testM: GetXnYMethod = {
+  getX(x) {
+    return x;
+  },
+
+  getY(y: number | string) {
+    return y as any;
+  },
+};
+
+// 아래 코드로 진행 요청 2
+interface GetXnYMethod {
+  getX(x: number): number;
+  getY(y: number): number;
+  getY(y: string): string;
+}
+
+const testM2: GetXnYMethod = {
+  getX(x) {
+    return x;
+  },
+
+  getY(y: any): any {
+    return y;
+  },
+};
+```
+
+# 타입 확장과 interface의 확장
+
+- type 확장
+
+```ts
+// type의 확장
+type TName = {
+  name: string;
+};
+type TAge = TName & {
+  age: number;
+};
+const bp: TAge = { age: 10, name: "아이유" };
+```
+
+- interface 확장
+
+```ts
+/**
+ * type의 확장과 interface의 확장
+ */
+// interface 확장
+interface IName {
+  name: string;
+}
+
+interface IAge extends IName {
+  age: number;
+}
+const iu: IAge = { age: 10, name: "아이유" };
+```
+
+- type과 interface 간 확장
+
+```ts
+// 인터페이스를 type을 이용해서 확장하기
+interface INameAge extends TName {
+  age: number;
+}
+const bts: INameAge = { age: 30, name: "bts" };
+
+// type을 인터페이스를 이용해서 확장하기
+type TNameAge = IName & {
+  age: number;
+};
+```
+
+```ts
+/**
+ * 타입 려어개를 상속 받아서 확장 하는 법.
+ * &를 이용한다.
+ */
+type DogName = {
+  name: string;
+};
+type DogAge = {
+  age: number;
+};
+type DogBreed = {
+  breed: string;
+};
+
+type Dog = DogName & DogAge & DogBreed;
+
+/**
+ * interface 여러개를 상속받아 확장하는 법.
+ */
+interface CatName {
+  name: string;
+}
+interface CatAge {
+  age: number;
+}
+
+interface Cat extends CatName, CatAge {
+  breed: string;
+}
+
+/**
+ * Orverriding
+ */
+type THeight = {
+  height: number;
+};
+type TRectangle = THeight & {
+  height: string;
+  width: number;
+};
+
+// string과 number를 &하면 never type이 나온다.
+// '존재할 수 없다'는 표현
+const box: TRectangle = {
+  height: "100", //  오류: height: never
+  width: 100,
+};
+
+// 위와 같은 상황을 해결하려면
+type TWidth = {
+  width: string | number;
+};
+type TRectangle2 = TWidth & {
+  width: number;
+  height: number;
+};
+const box2: TRectangle2 = {
+  height: 10,
+  // 타입 좁히기로 해결.
+  width: 10,
+};
+
+// 인터페이스의 예
+interface IHeight {
+  height: number;
+}
+interface IWidth {
+  width: number;
+}
+interface IRectangle extends IHeight {
+  //height: string; // 타입 오류 발생: 호환되지 않음
+  height: number;
+}
+```
+
+# Tuple
+
+- js에는 존재하지 않음.
+
+```ts
+/**
+ * Tuple
+ * 요소의 데이터 타입과 개수를 지정할 수 있다.
+ * 무조건 순서에 맞는 타입의 요소를 넣어야 한다.
+ * Tuple도 배열임.
+ */
+let idolMembers: string[] = ["아이유", "핑클", "블랙핑크"];
+// 튜블
+let idolMembersTuple: [string, string, string] = ["아이유", "핑클", "블랙핑크"];
+let iu: [number, string] = [30, "아이유"];
+iu.push("소녀시대"); // tuple로 지정한 타입과 다르지만 오류 없음. [30, "아이유", "소녀시대"]
+
+// Tuple의 배열의 요소 개수를 지켜주려면
+let blackPink: readonly [number, string] = [30, "제시"];
+// blackPink.push("홍길동"); // 오류: readonly에 의해 유지됨.
+
+// 배열 값을 tuple로 정의하는 법
+let idols = [30, "아이유"] as const;
+// idols.push("소녀시대"); // readonly로 의해 유지됨
+```
+
+```ts
+/**
+ * Named Tuple
+ * 요소 타입의 이름을 주는 문법
+ */
+let actors: [string, number] = ["이병헌", 50];
+let actors2: [name: string, age: number] = ["이병헌", 50];
+
+/**
+ * Tuple과 Tuple을 할당
+ */
+let ages: [number, number] = [1, 2];
+let sampleAges: [number, number] = ages;
+let sampleAges2: [string, number] = ages; // 오류: 타입이 맞지 않음
+let sampleAge3: [number, number, number] = ages; // 오류: 타입의 개수가 맞지 않음.
+```
+
+```ts
+/**
+ * Multi Dimenstion Tuple
+ */
+const idol2DTuple: [string, number][] = [
+  ["아이유", 30],
+  ["블랙핑크", 32],
+];
+```
+
+# TS에서 `객체` 상세히 알아보기
+
+```ts
+/**
+ * 객체
+ */
+let obj: {
+  age: number;
+  name: string;
+} = {
+  age: 30,
+  name: "아이유",
+};
+
+interface IPerson {
+  age: number;
+  name: string;
+}
+type TPerson = {
+  age: number;
+  name: string;
+};
+```
+
+```ts
+/**
+ * 속성 초과 검사
+ * - 객체 리터럴로 값을 할당하는 경우에만 ts가 검사
+ */
+type TName = {
+  name: string;
+};
+
+// 객체 리터럴로 정의한 객체
+// 속성이 초과되었는지 ts가 검사.
+// 아래의 예는 타입 정의가 없어서 실행하지 않고 있음.
+const iu = { name: "아이유", age: 30 };
+
+const iu2: TName = {
+  name: "아이유",
+  // age: 30, // 오류 발생(속성 초과)
+};
+
+type TAge = {
+  age: number;
+};
+//객체 리터럴로 정의
+const iu3: TAge = {
+  age: 30,
+  name: "아이유", // 오류 발생
+};
+
+// 아래부터 조심.
+const bPink = {
+  age: 32,
+  name: "블랙핑크",
+};
+const bPink1: TAge = bPink; // 오류가 없음 !!! : 만들어진 변수로 전달할 경우 속성 검사를 하지 않는다. (초과 검사 안함)
+bPink1.age; // 정상
+// 실행시에 오류를 일으킴
+bPink1.name; // 오류
+```
+
+```ts
+/**
+ * 중첩 속성 객체
+ * - 중첩 속성을 가능하면 정의하지 않기.
+ * - 별도의 정의를 진행하는 것이 좋음
+ */
+
+// 속성을 중첩한 예
+type Person = {
+  identity: {
+    name: string;
+    age: number;
+  };
+  country: string;
+};
+const iu: Person = {
+  identity: { name: "아이유", age: 30 },
+  country: "한국",
+};
+
+// 중첩을 배제한 예
+type TIdentity = {
+  name: string;
+  age: number;
+};
+type TPerson = {
+  identity: TIdentity;
+  country: string;
+};
+const iu2: TPerson = {
+  identity: {
+    name: "아이유",
+    age: 30,
+  },
+  country: "한국",
+};
+```
+
+```ts
+/**
+ * 객체끼리의 union
+ */
+const dogCat =
+  Math.random() > 0.5
+    ? { name: "멍멍이", age: 3 }
+    : { name: "야옹이", breed: "샴" };
+
+/**
+ * dogCat의 데이터 타입
+ * const dogCat: {
+name: string;
+age: number;
+breed?: undefined;
+} | {
+name: string;
+breed: string;
+age?: undefined;
+}
+     */
+dogCat;
+dogCat.name; // (property) name: string
+dogCat.age; // (property) age?: number | undefined
+dogCat.breed; // (property) breed?: string | undefined
+
+// 타입스크립트는 가능하면 타입 유추에 의해서 오류가 발생하는 것을 제거 가능하면 해줘야한다.
+interface Dog {
+  name: string;
+  age: number;
+}
+interface Cat {
+  name: string;
+  breed: string;
+}
+
+type DocCat = Dog | Cat;
+const dogCat2: DocCat =
+  Math.random() > 0.5
+    ? { name: "멍멍이", age: 3 }
+    : { name: "야옹이", breed: "샴" };
+
+dogCat2;
+dogCat2.name; // (property) name: string
+// dogCat2.age; // 오류
+// dogCat2.breed; // 오류
+if ("age" in dogCat2) {
+  dogCat2; // Dog
+} else if ("breed" in dogCat2) {
+  dogCat2; // Cat
+}
+```
+
+```ts
+/**
+ * 객체끼리의 인터섹션 &
+ * 참고(never)
+ * type A = number & string
+ */
+type PersonT = {
+  name: string;
+  age: number;
+};
+type CompanyT = {
+  company: string;
+  comNumber: number;
+};
+type PersonAndCompany = PersonT & CompanyT; // 모두 만족해야한다.
+const iu: PersonAndCompany = {
+  name: "아이유",
+  age: 30,
+  company: "소속사",
+  comNumber: 111,
+};
+```
+
+# Key Value 맵핑
+
+- Key와 Value 값을 자동으로 맵핑시키는 법.
+
+```ts
+/**
+ * Key와 Value 맵핑
+ */
+enum State {
+  LOADING,
+  SUCCESS,
+  ERROR,
+  INITIAL,
+}
+//api 타입1
+type ApiState = {
+  getUser: State;
+  paginateUser: State | undefined;
+  defenceUser: State | null;
+  getPost: State;
+};
+
+// api 타입2
+type UserApiState = {
+  getUser: State;
+  paginateUser: State | undefined;
+  defenceUser: State | null;
+};
+
+// api 타입3
+// 아래처럼 구성하면 타입이 변경이 일어나도 추가 작업이 없다.
+// 속성이 변화가 일어나도 한번에 모두 일어남.
+type UserApiState2 = {
+  getUser: ApiState["getUser"];
+  paginateUser: ApiState["paginateUser"];
+  defenceUser: ApiState["defenceUser"];
+};
+
+// api 타입 4
+type UserApiState3 = {
+  [key in "getUser" | "paginateUser" | "defenceUser"]: ApiState[key];
+};
+
+// api 타입 5
+// 유틸리티 타입
+// Pick: 내가 원하는 것만 뽑을 경우
+type UserApiState4 = Pick<ApiState, "getUser" | "paginateUser" | "defenceUser">;
+// Omit: 내가 원하는 것만 제외
+type UserApiState5 = Omit<ApiState, "getPost">;
+
+/**
+ * keyof
+ */
+type Allkeys = keyof ApiState;
+const key1: Allkeys = "getUser";
+const key2: Allkeys = "paginateUser";
+const key3: Allkeys = "defenceUser";
+const key4: Allkeys = "getPost";
+// const key5: Allkeys = "gogo"; // 오류
+
+// api타입 6
+// 속성 모두 가져오기
+type UserApiState6 = {
+  [key in keyof ApiState]: ApiState[key];
+};
+
+// 유틸리티 사용해보기
+// 항목 1개 빼기
+type UserApiState7 = {
+  // getPost만 제거해라
+  [key in Exclude<keyof ApiState, "getPost">]: ApiState[key];
+};
+
+// 항목 1개 빼고 모두 옵션으로 바꾸기
+type UserApiState8 = {
+  [key in Exclude<keyof ApiState, "getPost">]?: ApiState[key];
+};
+```

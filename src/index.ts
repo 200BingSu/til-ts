@@ -1,36 +1,72 @@
 /**
- * 함수 시그니처로 타입 구성
+ * Key와 Value 맵핑
  */
-// type으로 함수의 타입 정의하기
-const runner = () => {
-  return ["아이유", "블랙핑크"].map((x) => x);
-};
-
-type Mapper = (x: string) => string;
-
-const runner2 = (callback: Mapper) => {
-  return ["아이유", "블랙핑크"].map(callback);
-};
-
-runner2((x) => `${x}입니다`);
-
-type TwoMembers = (a: number, b: number) => number;
-
-//const twoFun: (a: number, b: number) => number
-const twoFun = (a: number, b: number): number => a + b;
-const twoFunT: TwoMembers = (a, b) => a + b;
-
-const add2: TwoMembers = (a, b) => a + b;
-const minus2: TwoMembers = (a, b) => a - b;
-const multiple2: TwoMembers = (a, b) => a * b;
-const divide2: TwoMembers = (a, b) => a / b;
-
-// interface로 함수 타입 정의하기
-interface ITwo {
-  (a: number, b: number): number;
+enum State {
+  LOADING,
+  SUCCESS,
+  ERROR,
+  INITIAL,
 }
+//api 타입1
+type ApiState = {
+  getUser: State;
+  paginateUser: State | undefined;
+  defenceUser: State | null;
+  getPost: State;
+};
 
-const add3: ITwo = (a, b) => a + b;
-const minus3: ITwo = (a, b) => a - b;
-const multiple3: ITwo = (a, b) => a * b;
-const divide3: ITwo = (a, b) => a / b;
+// api 타입2
+type UserApiState = {
+  getUser: State;
+  paginateUser: State | undefined;
+  defenceUser: State | null;
+};
+
+// api 타입3
+// 아래처럼 구성하면 타입이 변경이 일어나도 추가 작업이 없다.
+// 속성이 변화가 일어나도 한번에 모두 일어남.
+type UserApiState2 = {
+  getUser: ApiState["getUser"];
+  paginateUser: ApiState["paginateUser"];
+  defenceUser: ApiState["defenceUser"];
+};
+
+// api 타입 4
+type UserApiState3 = {
+  [key in "getUser" | "paginateUser" | "defenceUser"]: ApiState[key];
+};
+
+// api 타입 5
+// 유틸리티 타입
+// Pick: 내가 원하는 것만 뽑을 경우
+type UserApiState4 = Pick<ApiState, "getUser" | "paginateUser" | "defenceUser">;
+// Omit: 내가 원하는 것만 제외
+type UserApiState5 = Omit<ApiState, "getPost">;
+
+/**
+ * keyof
+ */
+type Allkeys = keyof ApiState;
+const key1: Allkeys = "getUser";
+const key2: Allkeys = "paginateUser";
+const key3: Allkeys = "defenceUser";
+const key4: Allkeys = "getPost";
+// const key5: Allkeys = "gogo"; // 오류
+
+// api타입 6
+// 속성 모두 가져오기
+type UserApiState6 = {
+  [key in keyof ApiState]: ApiState[key];
+};
+
+// 유틸리티 사용해보기
+// 항목 1개 빼기
+type UserApiState7 = {
+  // getPost만 제거해라
+  [key in Exclude<keyof ApiState, "getPost">]: ApiState[key];
+};
+
+// 항목 1개 빼고 모두 옵션으로 바꾸기
+type UserApiState8 = {
+  [key in Exclude<keyof ApiState, "getPost">]?: ApiState[key];
+};
