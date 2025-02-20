@@ -1418,3 +1418,411 @@ type UserApiState8 = {
   [key in Exclude<keyof ApiState, "getPost">]?: ApiState[key];
 };
 ```
+
+# class
+
+- 우리가 정의하기보다는 라이브러리들이 정의되어져 있음.
+
+```ts
+/**
+ * 제네릭
+ */
+function whatValue(value: any) {
+  return value;
+}
+
+//const v: any
+const v = whatValue("안녕");
+// v.toFixed(3); // 오류
+
+// 변수 타입을 실행 중에 전달 = 제네릭
+
+// Generic을 이용하여 보자.
+function genericWhatValue<T>(value: T): T {
+  return value;
+}
+
+const a = genericWhatValue<string>("안녕"); // const a: string
+const b = genericWhatValue<number>(1); // const b: number
+
+// 여러개의 변수타입을 전달 가능
+function genericMulty<T, U>(a: T, b: U): { a: T; b: U } {
+  return { a, b };
+}
+const d = genericMulty<string, number>("아이유", 30); // const d: { a: string; b: number }
+
+// 클래스에서 제네릭 사용하기
+class Idol {
+  name: string;
+  age: number;
+  constructor(name: string, age: number) {
+    this.name = name;
+    this.age = age;
+  }
+}
+
+class Car {
+  brand: string;
+  codeName: string;
+  constructor(brand: string, codeName: string) {
+    this.brand = brand;
+    this.codeName = codeName;
+  }
+}
+
+// 인스턴스 자동 생성 함수
+function makeInstance<T extends { new (...args: any[]): {} }>(
+  constructor: T,
+  ...args: any[]
+) {
+  return new constructor(...args);
+}
+const iu = makeInstance(Idol, "아이유", 30);
+const bmw = makeInstance(Car, "BMW", "m80");
+```
+
+```ts
+/**
+ * 제네릭
+ * 인터페이스에서 제네릭 사용하기
+ */
+interface DataCash<T> {
+  data: T[];
+  lastUpdate: Date;
+}
+const data: DataCash<string> = {
+  data: ["a", "b", "c"],
+  lastUpdate: new Date(),
+};
+
+const data2: DataCash<number> = {
+  data: [1, 2, 3],
+  lastUpdate: new Date(),
+};
+
+// 기본 타입을 지정할 수 있다.
+interface DefineType<T = string> {
+  data: T;
+}
+interface DefineType2<T = {}> {
+  data: T;
+}
+
+//기본 타입이 적용됨. const a: DefineType<string>
+const a: DefineType = {
+  data: "안녕",
+};
+// const b: DefineType<number>
+const b: DefineType<number> = {
+  data: 100,
+};
+```
+
+```ts
+/**
+ * 제네릭
+ * 타입에서 제네릭 사용하기
+ */
+type Sample = string;
+type Sample2 = number;
+type Sample3 = boolean;
+
+type GenericSample<T> = T;
+const a: GenericSample<string> = "안녕";
+const b: GenericSample<number> = 100;
+const c: GenericSample<boolean> = true;
+
+interface DoneState<T> {
+  data: T[];
+}
+interface LooadingState {
+  data: Date;
+}
+interface ErrorState {
+  data: Error;
+}
+
+type State<T = string> = DoneState<T> | LooadingState | ErrorState;
+
+let state: State = {
+  data: ["a", "b", "c"],
+};
+state = {
+  data: new Date(),
+};
+state = { data: new Error("로딩 실패") };
+
+interface TodoType {
+  id: number;
+  title: string;
+}
+let todoState: State<TodoType> = { data: [{ id: 1, title: "안녕" }] };
+```
+
+```ts
+/**
+ * 제네릭
+ * 클래스 상속에서 제네릭 사용하기
+ */
+class Base<T> {
+  // 초기값 있는 경우
+  data: T[] = [];
+}
+class StringBase extends Base<string> {}
+const a = new StringBase();
+a.data; // Base<string>.data: string[]
+
+// 자식 클래스가 제네릭으로 타입 변수 정의
+class NumberBase<U> extends Base<U> {}
+const b = new NumberBase<number>();
+b.data; // Base<number>.data: number[]
+
+// interface 상속
+interface BasicI {
+  name: string;
+}
+class Idol<T extends BasicI> {
+  // 초기값이 없으므로 constructor에서 셋팅
+  information: T;
+  constructor(information: T) {
+    this.information = information;
+  }
+}
+
+let iu = new Idol({ name: "아이유", age: 30 }); // let iu: Idol<{  name: string; age: number;}>
+
+// keyof 같이 사용하기
+const obj = { a: 1, b: 2, c: 3 };
+function objectParser<T, U extends keyof T>(v1: T, v2: U) {
+  return v1[v2];
+}
+// const e = objectParser(obj, "hi"); // 오류 : obj에 "hi"라는 키는 없기 때문에
+const e = objectParser(obj, "a"); // 정상
+
+// 3항 연산자 예제
+class Idol2 {
+  // 초기화가 필요하므로 constructor에서 할당.
+  // 하지만 옵션으로 설정하였다.
+  type?: string; // string|undefined
+}
+
+class FemaleIdol extends Idol2 {
+  type = "여자 아이돌";
+}
+class MaleIdol extends Idol2 {
+  type = "남자 아이돌";
+}
+type SpecialIdol<T extends Idol2> = T extends MaleIdol ? MaleIdol : FemaleIdol;
+
+const idol1: SpecialIdol<FemaleIdol> = new FemaleIdol();
+idol1.type; // "여자 아이돌"
+const idol2: SpecialIdol<MaleIdol> = new MaleIdol();
+idol2.type; // "남자 아이돌"
+```
+
+```ts
+/**
+ * 제네릭
+ * 클래스 메서드에서 제네릭 사용하기
+ */
+class Idol<T> {
+  // 필드
+  id: T;
+  name: string;
+  constructor(id: T, name: string) {
+    this.id = id;
+    this.name = name;
+  }
+  // 메서드에 제네릭 적용하기
+  sayHello<M>(memo: M) {
+    return memo;
+  }
+}
+
+const iu = new Idol<string>("1004", "아이유");
+iu.sayHello<string>("안녕");
+iu.sayHello(1990); // 타입 추론이 되기 때문에 타입 생략 가능
+
+// 아래는 한번 체크합시다.
+class Idol2<T> {
+  sayHello<T>(memo: T) {
+    return memo;
+  }
+}
+const iu2 = new Idol2<string>();
+iu2.sayHello<number>(1990);
+iu2.sayHello(1990);
+```
+
+```ts
+/**
+ * 제네릭
+ * 클래스 Implmentation에서 제네릭 사용하기
+ */
+// 약속을 지켜라
+interface Singer<T, U> {
+  name: T;
+  sing(year: U): void;
+}
+
+class Idol implements Singer<string, number> {
+  name: string;
+  constructor(name: string) {
+    this.name = name;
+  }
+  // 메서드
+  sing(year: number): void {
+    console.log(year);
+  }
+}
+const iu = new Idol("아이유");
+
+class Idol2<T, U> implements Singer<T, U> {
+  name: T;
+  constructor(name: T) {
+    this.name = name;
+  }
+  // 메서드
+  sing(year: U): void {
+    console.log(year);
+  }
+}
+const iu2 = new Idol2<string, number>("아이유");
+```
+
+```ts
+/**
+ * 제네릭
+ * Promise에서 제네릭 사용하기
+ */
+const afterTwoTime = function (): Promise<string> {
+  return new Promise((resolve) => {
+    resolve("hi");
+  });
+};
+```
+
+# 유틸리티 타입(Utility Types)
+
+```ts
+/**
+ * Partial Type
+ * 가장 많이 사용하는 유틸리티 타입
+ * 객체의 일부분만 수정하기
+ */
+interface Idol {
+  name: string;
+  age: number;
+  groupName: string;
+}
+const suji: Idol = {
+  name: "수지",
+  age: 32,
+  groupName: "에이..?핑크",
+};
+type IdolPartial = Partial<Idol>;
+
+function updateIdol(origin: Idol, update: IdolPartial): Idol {
+  return { ...origin, ...update };
+}
+const suji2 = updateIdol(suji, { age: 29 });
+
+/**
+ * Required Type
+ * 모두 필수 속성으로 바꿈
+ */
+interface Cat {
+  name: string;
+  age?: number;
+  breed?: string;
+}
+type CatRequired = Required<Cat>;
+
+/**
+ * Readonly Type
+ * 모두 읽기 전용으로 바꿈
+ */
+interface Cat2 {
+  name: string;
+  age?: number;
+  breed?: string;
+}
+type CatReadonly = Readonly<Cat2>;
+
+/**
+ * Pick Type
+ * 속성을 선택해서 타입 사용
+ */
+interface Cat3 {
+  name: string;
+  age?: number;
+  breed?: string;
+}
+type CatPick = Pick<Cat3, "age" | "breed">;
+
+/**
+ * Ommit Type
+ * 속성을 제외해서 타입 사용
+ */
+interface Cat4 {
+  name: string;
+  age?: number;
+  breed?: string;
+}
+type CatOmmit = Omit<Cat4, "name">;
+
+/**
+ * Exclude Type
+ * 특정 타입을 제외하고 사용
+ */
+type NoString = Exclude<string | boolean | number, string>; // string만 제외
+type Candy = "초코" | "딸기" | "바나나" | "사과";
+type RemainingCandy = Exclude<Candy, "초코" | "바나나">; //type RemainingCandy = "딸기" | "사과"
+
+/**
+ * Extract Type
+ * 특정 타입을 추출해서 사용
+ */
+type NoString2 = Extract<string | boolean | number, string>; // string만 뽑기
+type Candy2 = "초코" | "딸기" | "바나나" | "사과";
+type RemainingCandy2 = Extract<Candy, "초코" | "바나나">; // 초코, 바나나만 뽑기
+
+/**
+ * ParamType Type
+ * 매개변수 타입을 사용
+ */
+function fun(x: number, y: number, z: boolean) {}
+type Tparams = Parameters<typeof fun>; // type Tparams = [x: number, y: number, z: boolean]
+type TParamsVoid = Parameters<(a: number) => void>; //type TParamsVoid = [a: number]
+
+/**
+ * ConstructorParameters Type
+ * 생성자 함수의 타입을 사용
+ */
+class Idol {
+  name: string;
+  age: number;
+  constructor(name: string, age: number) {
+    this.name = name;
+    this.age = age;
+  }
+}
+type TSC = ConstructorParameters<typeof Idol>; // type TSC = [name: string, age: number]
+
+/**
+ * ReturnType Type(함수의 리턴타입)
+ * 함수의 리턴타입을 사용
+ */
+type sFn = (a: number) => number;
+type RT = ReturnType<sFn>; //type RT = number;
+type RT2 = ReturnType<() => void>; //type RT2 = void;
+
+/**
+ * Template Literal Type
+ */
+type IU = "Iue";
+type UIU = Uppercase<IU>; //type UIU = "IUE"
+type sIU = Lowercase<IU>; //type sIU = "iue"
+type cIU = Capitalize<IU>; //type cIU = "Iue"
+type uIU = Uncapitalize<IU>; //type uIU = "iue"
+```

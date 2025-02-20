@@ -1,72 +1,120 @@
 /**
- * Key와 Value 맵핑
+ * Partial Type
+ * 가장 많이 사용하는 유틸리티 타입
+ * 객체의 일부분만 수정하기
  */
-enum State {
-  LOADING,
-  SUCCESS,
-  ERROR,
-  INITIAL,
+interface Idol {
+  name: string;
+  age: number;
+  groupName: string;
 }
-//api 타입1
-type ApiState = {
-  getUser: State;
-  paginateUser: State | undefined;
-  defenceUser: State | null;
-  getPost: State;
+const suji: Idol = {
+  name: "수지",
+  age: 32,
+  groupName: "에이..?핑크",
 };
+type IdolPartial = Partial<Idol>;
 
-// api 타입2
-type UserApiState = {
-  getUser: State;
-  paginateUser: State | undefined;
-  defenceUser: State | null;
-};
-
-// api 타입3
-// 아래처럼 구성하면 타입이 변경이 일어나도 추가 작업이 없다.
-// 속성이 변화가 일어나도 한번에 모두 일어남.
-type UserApiState2 = {
-  getUser: ApiState["getUser"];
-  paginateUser: ApiState["paginateUser"];
-  defenceUser: ApiState["defenceUser"];
-};
-
-// api 타입 4
-type UserApiState3 = {
-  [key in "getUser" | "paginateUser" | "defenceUser"]: ApiState[key];
-};
-
-// api 타입 5
-// 유틸리티 타입
-// Pick: 내가 원하는 것만 뽑을 경우
-type UserApiState4 = Pick<ApiState, "getUser" | "paginateUser" | "defenceUser">;
-// Omit: 내가 원하는 것만 제외
-type UserApiState5 = Omit<ApiState, "getPost">;
+function updateIdol(origin: Idol, update: IdolPartial): Idol {
+  return { ...origin, ...update };
+}
+const suji2 = updateIdol(suji, { age: 29 });
 
 /**
- * keyof
+ * Required Type
+ * 모두 필수 속성으로 바꿈
  */
-type Allkeys = keyof ApiState;
-const key1: Allkeys = "getUser";
-const key2: Allkeys = "paginateUser";
-const key3: Allkeys = "defenceUser";
-const key4: Allkeys = "getPost";
-// const key5: Allkeys = "gogo"; // 오류
+interface Cat {
+  name: string;
+  age?: number;
+  breed?: string;
+}
+type CatRequired = Required<Cat>;
 
-// api타입 6
-// 속성 모두 가져오기
-type UserApiState6 = {
-  [key in keyof ApiState]: ApiState[key];
-};
+/**
+ * Readonly Type
+ * 모두 읽기 전용으로 바꿈
+ */
+interface Cat2 {
+  name: string;
+  age?: number;
+  breed?: string;
+}
+type CatReadonly = Readonly<Cat2>;
 
-// 유틸리티 사용해보기
-// 항목 1개 빼기
-type UserApiState7 = {
-  // getPost만 제거해라
-  [key in Exclude<keyof ApiState, "getPost">]: ApiState[key];
-};
+/**
+ * Pick Type
+ * 속성을 선택해서 타입 사용
+ */
+interface Cat3 {
+  name: string;
+  age?: number;
+  breed?: string;
+}
+type CatPick = Pick<Cat3, "age" | "breed">;
 
-// 항목 1개 빼고 모두 옵션으로 바꾸기
-type UserApiState8 = {
-  [key in Exclude<keyof ApiState, "getPost">]?: ApiState[key];
-};
+/**
+ * Ommit Type
+ * 속성을 제외해서 타입 사용
+ */
+interface Cat4 {
+  name: string;
+  age?: number;
+  breed?: string;
+}
+type CatOmmit = Omit<Cat4, "name">;
+
+/**
+ * Exclude Type
+ * 특정 타입을 제외하고 사용
+ */
+type NoString = Exclude<string | boolean | number, string>; // string만 제외
+type Candy = "초코" | "딸기" | "바나나" | "사과";
+type RemainingCandy = Exclude<Candy, "초코" | "바나나">; //type RemainingCandy = "딸기" | "사과"
+
+/**
+ * Extract Type
+ * 특정 타입을 추출해서 사용
+ */
+type NoString2 = Extract<string | boolean | number, string>; // string만 뽑기
+type Candy2 = "초코" | "딸기" | "바나나" | "사과";
+type RemainingCandy2 = Extract<Candy, "초코" | "바나나">; // 초코, 바나나만 뽑기
+
+/**
+ * ParamType Type
+ * 매개변수 타입을 사용
+ */
+function fun(x: number, y: number, z: boolean) {}
+type Tparams = Parameters<typeof fun>; // type Tparams = [x: number, y: number, z: boolean]
+type TParamsVoid = Parameters<(a: number) => void>; //type TParamsVoid = [a: number]
+
+/**
+ * ConstructorParameters Type
+ * 생성자 함수의 타입을 사용
+ */
+class Idol {
+  name: string;
+  age: number;
+  constructor(name: string, age: number) {
+    this.name = name;
+    this.age = age;
+  }
+}
+type TSC = ConstructorParameters<typeof Idol>; // type TSC = [name: string, age: number]
+
+/**
+ * ReturnType Type(함수의 리턴타입)
+ * 함수의 리턴타입을 사용
+ */
+type sFn = (a: number) => number;
+type RT = ReturnType<sFn>; //type RT = number;
+type RT2 = ReturnType<() => void>; //type RT2 = void;
+
+/**
+ * Template Literal Type
+ */
+type IU = "Iue";
+type UIU = Uppercase<IU>; //type UIU = "IUE"
+type sIU = Lowercase<IU>; //type sIU = "iue"
+type cIU = Capitalize<IU>; //type cIU = "Iue"
+type uIU = Uncapitalize<IU>; //type uIU = "iue"
